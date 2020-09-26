@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container-fluid">
+    <pre class="first-pre col-md-6"><code class="json"></code></pre>
+    <pre class="second-pre col-md-6"><code class="json"></code></pre>
+</div>
+
+<style>
+    .del-code{
+        background: #f78599;
+    }
+    .add-code{
+        background: #61ff89;
+    }
+    pre{
+        /* padding: 0 !important; */
+        border: 0;
+        background: none;
+        border-radius: 0;
+    }
+    .first-pre{
+        padding-left: 0;
+        padding-right: 7px;
+    }
+    .second-pre{
+        padding-left: 7px;
+        padding-right: 0;
+    }
+    code {
+        padding: 15px !important;
+        border-radius: 10px !important;
+    }
+</style>
+<script>
+    // 把 diff 的部分调个颜色
+    function highlight_diff(){
+        DEL_INT_LABLE = '"__DEL_INT__'
+        ADD_INT_LABLE = '"__ADD_INT__'
+        DEL_CLASS = "del-code"
+        ADD_CLASS = "add-code"
+        
+        $('.hljs span').each(function(){
+            text = $(this).text()
+
+            if (text.startsWith(DEL_INT_LABLE)){
+                real_value = parseInt(text.split(DEL_INT_LABLE)[1])
+                $(this).text(real_value)
+                $(this).addClass(DEL_CLASS)
+            }
+            else if (text.startsWith(ADD_INT_LABLE)){
+                real_value = parseInt(text.split(ADD_INT_LABLE)[1])
+                $(this).text(real_value)
+                $(this).addClass(ADD_CLASS)
+            }
+        })
+    }
+
+    data = {
+        "first_json": {"code": 200, "message": "", "data": {"key": [1, 2, 3], "name": "\u8def\u5c0f\u9e7f", "password": "2", "gender": "", "age": null, "phone": "3", "email": "", "company": "4", "daily_salary": 1000, "period": [{"name": "\u4e0a\u5348", "start": "10:00", "end": "12:00"}, {"name": "\u4e0b\u5348", "start": "14:00", "end": "18:47"}, {"name": "\u665a\u4e0a", "start": "20:00", "end": "21:00"}]}},
+        "second_json": {"code": 200, "message": "", "data": {"key": [1, 2, 4], "name": "\u8def\u5c0f\u9e7f", "password": "2", "gender": "", "age": null, "phone": "3", "email": "", "company": "4", "daily_salary": 1000, "period": [{"name": "\u4e0a\u5348", "start": "10:00", "end": "12:00"}, {"name": "\u4e0b\u5348", "start": "14:00", "end": "18:47"}, {"name": "\u665a\u4e0a", "start": "20:00", "end": "21:00"}]}}
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "/api/diffdict",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(data),
+        async: false,
+        //返回数据的格式
+        datatype: "json",
+
+        success:function(ans){
+            ans = JSON.parse(ans) 
+            $(".first-pre code").text(JSON.stringify(ans['data']['first_json'], null, 4))
+            $(".second-pre code").text(JSON.stringify(ans['data']['second_json'], null, 4))
+        },
+        error: function(){
+        }         
+    })
+    setInterval(function(){
+        highlight_diff()
+    }, 1000)
+</script>
+{% endblock %}
